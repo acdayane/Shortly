@@ -10,4 +10,4 @@ dotenv.config();
 
 app.use(usersRoutes);
 
-app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
+app.listen(process.env.PORT_SERVER, () => console.log(`Server running on port ${process.env.PORT_SERVER}`));
