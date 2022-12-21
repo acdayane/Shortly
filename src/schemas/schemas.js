@@ -5,3 +5,9 @@ export const newUserSchema = joi.object({
     email: joi.string().email().required(),
     password: joi.string().min(4).max(8).required()
 });
+
+export const urlSchema = joi.object({
+    userId: joi.number().integer().required(),
+    url: joi.string().uri().required(),
+    shortUrl: joi.string().required()
+});

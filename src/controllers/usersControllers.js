@@ -25,7 +25,6 @@ export async function signUp(req, res) {
     try {
         const checkEmail = await connection.query('SELECT * FROM users WHERE email = $1;', [email]);
         if (checkEmail.rows.length !== 0) {
-            console.log('erro checkemail')
             return res.sendStatus(409);
         };
 
@@ -46,14 +45,15 @@ export async function signIn(req, res) {
         if (checkEmail.rows.length === 0) {
             return res.sendStatus(409);
         };
-        const userId = checkEmail.rows[0].id;
 
         const checkPassword = bcrypt.compareSync(password, checkEmail.rows[0].password);
         if (!checkPassword) {
             return res.sendStatus(401);
         };
 
+        const userId = checkEmail.rows[0].id;
         const token = jwt.sign({ id: userId }, process.env.SECRET_JWT, { expiresIn: 86400 });
+
         res.status(200).send({ token });
 
     } catch (err) {
