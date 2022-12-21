@@ -1,11 +1,13 @@
 import bcrypt from "bcrypt";
-import {v4 as uuidV4} from "uuid";
 import { newUserSchema } from "../schemas/schemas.js";
 import { connection } from "../database.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-export async function signUp (req, res) {
-    const {name, email, password, confirmPassword} = req.body;
-    console.log('oi')
+dotenv.config();
+
+export async function signUp(req, res) {
+    const { name, email, password, confirmPassword } = req.body;
 
     if (password !== confirmPassword) {
         return res.sendStatus(422);
@@ -14,6 +16,7 @@ export async function signUp (req, res) {
     const validation = newUserSchema.validate({ name, email, password }, { abortEarly: false });
     if (validation.error) {
         const err = validation.error.details.map((d) => d.message);
+        console.log('erro validation')
         return res.status(422).send(err);
     };
 
@@ -22,6 +25,7 @@ export async function signUp (req, res) {
     try {
         const checkEmail = await connection.query('SELECT * FROM users WHERE email = $1;', [email]);
         if (checkEmail.rows.length !== 0) {
+            console.log('erro checkemail')
             return res.sendStatus(409);
         };
 
@@ -34,31 +38,23 @@ export async function signUp (req, res) {
     };
 };
 
-export async function signIn (req, res) {
-    const {email, password} = req.body;
-    const token = uuidV4;
+export async function signIn(req, res) {
+    const { email, password } = req.body;
 
     try {
         const checkEmail = await connection.query('SELECT * FROM users WHERE email = $1;', [email]);
-        if (checkEmail.rows.length !== 0) {
+        if (checkEmail.rows.length === 0) {
             return res.sendStatus(409);
         };
-        const userId = checkEmail.rows.id;
-        console.log(userId)
+        const userId = checkEmail.rows[0].id;
 
-        const checkPassword = bcrypt.compareSync(password, checkEmail.rows.password);
+        const checkPassword = bcrypt.compareSync(password, checkEmail.rows[0].password);
         if (!checkPassword) {
             return res.sendStatus(401);
         };
 
-        const openedSession = await connection.query('SELECT * FROM sessions WHERE "userId" = $1;', [userId]);
-        if (openedSession) {
-            await connection.query('DELETE.....');
-        };
-
-        await connection.query('INSERT INTO sessions (name, email, password) VALUES ($1, $2, $3);', [token]);
-
-        res.sendStatus(201);
+        const token = jwt.sign({ id: userId }, process.env.SECRET_JWT, { expiresIn: 86400 });
+        res.status(200).send({ token });
 
     } catch (err) {
         res.status(422).send(err);
