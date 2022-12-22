@@ -60,3 +60,41 @@ export async function signIn(req, res) {
         res.status(422).send(err);
     };
 };
+
+export async function userUrls(req, res) {
+    const { userId, userName } = req.userData;
+    let arrUrls = [];
+
+    try {
+
+        let sumVisits = await connection.query(`
+            SELECT SUM("visitCount") FROM urls WHERE "userId"=$1;`, [userId]
+        );
+        sumVisits = sumVisits.rows[0].sum;
+
+        const urls = await connection.query(`
+            SELECT * FROM urls WHERE "userId"=$1;`, [userId]
+        );
+
+        for (let i=0; i<urls.rows.length; i++) {
+            arrUrls.push({
+                id: urls.rows[i].id,
+                shortUrl: urls.rows[i].shortUrl,
+                url: urls.rows[i].url,
+                visitCount: urls.rows[i].visitCount
+            });
+        };
+
+        const objUserUrls = {
+            id: userId,
+            name: userName,
+            visitCount: sumVisits,
+            shortenedUrls: arrUrls
+        };
+
+        res.status(200).send(objUserUrls);
+
+    } catch (err) {
+        res.status(500).send(err);
+    };
+};
