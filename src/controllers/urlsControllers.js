@@ -28,7 +28,19 @@ export async function newShortUrl(req, res) {
 };
 
 export async function getUrlById(req, res) {
+    const urlId = req.params.id;
 
+    try {
+        const urlExist = await connection.query('SELECT id, url, "shortUrl" FROM urls WHERE id=$1;', [urlId]);
+        if (urlExist.rows.length === 0) {
+            return res.sendStatus(404);
+        };
+
+        res.status(200).send(urlExist.rows[0]);
+
+    } catch (err) {
+        res.status(500).send(err);
+    };
 };
 
 export async function visitUrl(req, res) {
