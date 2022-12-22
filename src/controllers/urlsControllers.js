@@ -44,7 +44,29 @@ export async function getUrlById(req, res) {
 };
 
 export async function visitUrl(req, res) {
+    const shortUrl = req.params.shortUrl;
+    
+    try {
+        const urlExist = await connection.query(`
+            SELECT id, url, "visitCount" FROM urls WHERE "shortUrl" = $1`, [shortUrl]
+        );
+        const count = urlExist.rows[0].visitCount + 1;
+        const id = urlExist.rows[0].id;
+        const url = urlExist.rows[0].url;
 
+        if (urlExist.rows.length === 0) {
+            return res.sendStatus(404);
+        };        
+
+        await connection.query(`
+            UPDATE urls SET "visitCount"=$1 WHERE id=$2`, [count, id]
+        );
+        
+        res.status(200).redirect(url);   
+
+    } catch (err) {
+        res.status(500).send(err);
+    };
 };
 
 export async function deleteUrl(req, res) {
