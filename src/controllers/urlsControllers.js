@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 
 export async function newShortUrl(req, res) {
     const { url } = req.body;
-    const shortUrl = nanoid();   
+    const shortUrl = nanoid();
     const userId = req.id;
 
     try {
@@ -31,7 +31,9 @@ export async function getUrlById(req, res) {
     const urlId = req.params.id;
 
     try {
-        const urlExist = await connection.query('SELECT id, url, "shortUrl" FROM urls WHERE id=$1;', [urlId]);
+        const urlExist = await connection.query(`
+            SELECT id, url, "shortUrl" FROM urls WHERE id=$1;`, [urlId]
+        );
         if (urlExist.rows.length === 0) {
             return res.sendStatus(404);
         };
@@ -45,7 +47,7 @@ export async function getUrlById(req, res) {
 
 export async function visitUrl(req, res) {
     const shortUrl = req.params.shortUrl;
-    
+
     try {
         const urlExist = await connection.query(`
             SELECT id, url, "visitCount" FROM urls WHERE "shortUrl" = $1`, [shortUrl]
@@ -56,13 +58,13 @@ export async function visitUrl(req, res) {
 
         if (urlExist.rows.length === 0) {
             return res.sendStatus(404);
-        };        
+        };
 
         await connection.query(`
             UPDATE urls SET "visitCount"=$1 WHERE id=$2`, [count, id]
         );
-        
-        res.status(200).redirect(url);   
+
+        res.status(200).redirect(url);
 
     } catch (err) {
         res.status(500).send(err);
@@ -70,5 +72,29 @@ export async function visitUrl(req, res) {
 };
 
 export async function deleteUrl(req, res) {
+    const userId = req.id;
+    const urlId = req.params.id;
 
+    try {
+        const urlExist = await connection.query(`
+            SELECT "userId" FROM urls WHERE id=$1;`, [urlId]
+        );
+
+        if (urlExist.rows.length === 0) {
+            return res.sendStatus(404);
+        };
+
+        if (urlExist.rows[0].userId !== userId) {
+            return res.sendStatus(401)
+        };
+
+        await connection.query(`
+            DELETE FROM urls WHERE id=$1`, [urlId]
+        );
+
+        res.sendStatus(204);
+
+    } catch (err) {
+        res.sendStatus(500);
+    };   
 };
