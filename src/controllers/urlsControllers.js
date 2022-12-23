@@ -1,12 +1,12 @@
-import { connection } from "../database.js";
+import { connection } from "../database/database.js";
 import { urlSchema } from "../schemas/schemas.js";
 import { nanoid } from "nanoid";
 
 export async function newShortUrl(req, res) {
+    const { userId } = req.userData;
     const { url } = req.body;
-    const shortUrl = nanoid();
-    const userId = req.id;
-
+    const shortUrl = nanoid();    
+   
     try {
         const validation = urlSchema.validate({ url, shortUrl, userId }, { abortEarly: false });
         if (validation.error) {
@@ -96,5 +96,5 @@ export async function deleteUrl(req, res) {
 
     } catch (err) {
         res.sendStatus(500);
-    };   
+    };
 };

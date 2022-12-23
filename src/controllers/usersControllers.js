@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { newUserSchema } from "../schemas/schemas.js";
-import { connection } from "../database.js";
+import { connection } from "../database/database.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
