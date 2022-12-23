@@ -85,7 +85,7 @@ export async function deleteUrl(req, res) {
         };
 
         if (urlExist.rows[0].userId !== userId) {
-            return res.sendStatus(401)
+            return res.sendStatus(401);
         };
 
         await connection.query(`

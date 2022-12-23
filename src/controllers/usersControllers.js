@@ -16,7 +16,6 @@ export async function signUp(req, res) {
     const validation = newUserSchema.validate({ name, email, password }, { abortEarly: false });
     if (validation.error) {
         const err = validation.error.details.map((d) => d.message);
-        console.log('erro validation')
         return res.status(422).send(err);
     };
 
