@@ -73,7 +73,7 @@ export async function userUrls(req, res) {
         sumVisits = sumVisits.rows[0].sum;
 
         const urls = await connection.query(`
-            SELECT * FROM urls WHERE "userId"=$1;`, [userId]
+            SELECT * FROM urls WHERE "userId"=$1 ORDER BY id;`, [userId]
         );
 
         for (let i=0; i<urls.rows.length; i++) {

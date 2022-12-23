@@ -16,12 +16,12 @@ export const authMiddleware = async (req, res, next) => {
         };
 
         jwt.verify(token, process.env.SECRET_JWT, (error, decoded) => {
+            userId = decoded.id;
             if (error) {
                 return res.status(401).send({ message: "invalid token" });
-            };
-            userId = decoded.id;
+            };            
         });
-
+        
         const userExist = await connection.query('SELECT * FROM users WHERE id = $1;', [userId]);
 
         if (userExist.rows.length === 0) {
